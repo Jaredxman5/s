@@ -1,0 +1,84 @@
+services:
+  postgres:
+    container_name: postgres-sql-bsn
+    image: postgres
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data
+      POSTGRES_DB: book_social_network
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - 5432:5432
+    networks:
+      - spring-demo
+    restart: unless-stopped
+
+  mail-dev:
+    container_name: mail-dev-bsn
+    image: maildev/maildev
+    ports:
+      - 1080:1080
+      - 1025:1025
+    networks:
+      - spring-demo
+
+  keycloak:
+    container_name: keycloak-bsn
+    image: quay.io/keycloak/keycloak:24.0.2
+    ports:
+      #- 9090:8080
+      - 8443:8443
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ArmadurasUAC29
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/fullchain.pem
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/privkey.pem
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres/book_social_network
+      KC_DB_USERNAME: username
+      KC_DB_PASSWORD: password
+    depends_on:
+      - postgres
+    restart: always
+    networks:
+      - spring-demo
+    volumes:
+      - ./keycloak-certs/fullchain.pem:/opt/keycloak/conf/fullchain.pem
+      - ./keycloak-certs/privkey.pem:/opt/keycloak/conf/privkey.pem
+    command: ["start-dev"]
+
+  bsn-api:
+    container_name: bsn-api
+    image: 013200177h/bsn-api:1.0.3
+    env_file:
+      - dev.env
+    ports:
+      - 8088:8088
+    networks:
+      - spring-demo
+    depends_on:
+      - postgres
+
+  bsn-ui:
+    container_name: bsn-ui
+    image: 013200177h/bsn-ui:0.0.1
+    ports:
+      - 8080:80
+      - 443:443
+    networks:
+      - spring-demo
+    volumes:
+      - ./keycloak-certs/fullchain.pem:/opt/porkbun/conf/fullchain.pem
+      - ./keycloak-certs/privkey.pem:/opt/porkbun/conf/privkey.pem
+    depends_on:
+      - bsn-api
+
+networks:
+  spring-demo:
+    driver: bridge
+
+volumes:
+  postgres:
+    driver: local

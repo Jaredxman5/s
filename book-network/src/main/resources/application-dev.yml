@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/book_social_network
+    username: username
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql:true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  mail:
+    host: ${EMAIL_HOSTNAME}
+    port: 587
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enabled: true
+            trust: "*"
+            protocols: TLSv1.2
+          starttls:
+            enable: true
+            required: true
+      protocol: smtp
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://www.sianesar.com:8443/realms/book-social-network"
+
+  application:
+    cors:
+      origins: http://localhost:4200,http://localhost:8080,http://147.93.2.209:8088,http://147.93.2.209:8080,https://www.sianesar.com:8080,https://www.sianesar.com:8088
+    file:
+      upload:
+        photos-output-path: ./uploads
+server:
+    port: 8088
+    ssl:
+      key-store: classpath:keystore.p12
+      key-store-password: Armaduras
+      key-store-type: PKCS12
+      key-alias: armaduras
